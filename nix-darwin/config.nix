@@ -2,10 +2,36 @@
   nix.settings.experimental-features = "nix-command flakes";
   nixpkgs.hostPlatform = "x86_64-darwin";
 
+  system.primaryUser = "toyo";
+
   users.users.toyo = {
     name = "toyo";
     home = "/Users/toyo";
+    shell = pkgs.zsh;
   };
+
+  homebrew = {  
+    enable = true;
+
+    taps = [
+      "koekeishiya/formulae"
+    ];
+
+    brews = [
+      "koekeishiya/formulae/yabai"
+    ];
+
+    casks = [
+      {
+        name = "1password";
+        greedy = true;
+      }
+      "duet"
+      "zwift"
+      "stremio"
+      "ghostty"
+    ];
+    };
 
   environment.systemPackages = with pkgs; [
     home-manager

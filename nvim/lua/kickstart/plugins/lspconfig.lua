@@ -220,6 +220,27 @@ return {
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         -- ts_ls = {},
         --
+        vtsls = {
+          settings = {
+            typescript = {
+              preferences = {
+                includePackageJsonAutoImports = "on",
+              },
+              suggest = {
+                completeFunctionCalls = true,
+              },
+            },
+            vtsls = {
+              enableMoveToFileCodeAction = true,
+              autoUseWorkspaceTsdk = true,
+              experimental = {
+                completion = {
+                  enableServerSideFuzzyMatch = true,
+                },
+              },
+            },
+          },
+        },
 
         lua_ls = {
           -- cmd = { ... },

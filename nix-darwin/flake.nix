@@ -2,7 +2,7 @@
   description = "Modular nix-darwin + home-manager config";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nix-darwin.url = "github:lnl7/nix-darwin/master";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -18,6 +18,7 @@
       darwinConfigurations.${hostname} = nix-darwin.lib.darwinSystem {
         inherit system;
         modules = [
+          { nixpkgs.config.allowUnfree = true; }
           ./config.nix
           home-manager.darwinModules.home-manager
           {

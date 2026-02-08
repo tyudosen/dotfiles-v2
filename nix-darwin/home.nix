@@ -1,11 +1,12 @@
 { config, pkgs, lib, ... }: {
-  home.stateVersion = "24.11";
+  home.stateVersion = "25.11";
 
   home.packages = with pkgs; [
     tmux
+    rustup
     smug
     oh-my-zsh 
-    pkgs.pnpm_10
+    pnpm
     direnv
     git
     unzip
@@ -13,15 +14,79 @@
     ripgrep
     gnumake
     lazygit
+    zoom-us
+    nodejs_22
+    obsidian
+    claude-code
+    libiconv
+    zlib
+    _1password-cli
   ];
+
+  nixpkgs = {
+    config = {
+      allowUnfree = true;
+    };
+  };
 
   home.sessionVariables = {
     XDG_CONFIG_HOME = "${config.home.homeDirectory}/.config";
+    LIBRARY_PATH = "${pkgs.libiconv}/lib:${pkgs.zlib}/lib";
+    SHELL = "${pkgs.zsh}/bin/zsh";
   };
 
   programs.neovim = {
       enable = true;
       withNodeJs = true;
+  };
+
+  programs.tmux = {
+    enable = true;
+
+    # --- Basic Settings ---
+    # Replaces: set -g prefix C-a
+    prefix = "C-a";
+
+    shell = "${pkgs.zsh}/bin/zsh";
+
+    # --- Environment Fix ---
+    # Solves the problem of tmux sessions having a stale environment
+    # updateEnvironment = true;
+
+    # --- Plugin Management ---
+    # This section replaces TPM and all `set -g @plugin '...'` lines.
+    # Home Manager is now your plugin manager.
+    plugins = with pkgs; [
+      tmuxPlugins.sensible
+      tmuxPlugins.vim-tmux-navigator
+      tmuxPlugins.resurrect
+      tmuxPlugins.continuum
+    ];
+
+    # --- The Catch-All for Everything Else ---
+    # Any command that doesn't have a dedicated option goes here.
+    extraConfig = ''
+      # --- Custom Keybindings ---
+      # Replaces: unbind r / bind r ...
+      # Note: The "Nix way" to reload is `home-manager switch`, but this
+      # binding is kept for convenience during quick edits.
+      unbind r
+      bind r source-file ~/.config/tmux/tmux.conf \; display "Reloaded!"
+
+      set-option -g default-command "${pkgs.zsh}/bin/zsh"
+
+      # Replaces: bind -n M-] next-window / bind -n M-[ previous-window
+      bind -n M-] next-window
+      bind -n M-[ previous-window
+
+      # --- Plugin Settings ---
+      # Replaces: set -g @resurrect-strategy-vim 'session'
+      set -g @resurrect-strategy-vim 'session'
+      # Replaces: set -g @resurrect-strategy-nvim 'session'
+      set -g @resurrect-strategy-nvim 'session'
+      # Replaces: set -g @continuum-restore 'on'
+      set -g @continuum-restore 'on'
+    '';
   };
 
 

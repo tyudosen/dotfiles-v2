@@ -105,6 +105,12 @@ require 'lazy-bootstrap'
 -- [[ Configure and install plugins ]]
 require 'lazy-plugins'
 
+require('toggleterm').setup {
+  open_mapping = [[<leader>tt]], -- use Ctrl-t instead
+  direction = 'float',
+  float_opts = { border = 'rounded' },
+}
+
 local harpoon = require 'harpoon'
 
 -- harpoon config ---
@@ -159,6 +165,46 @@ vim.keymap.set('n', '<C-S-N>', function()
 end)
 
 ----- end harpoon config ----
+
+-- Create manual command to select TypeScript version
+vim.api.nvim_create_user_command('VtslsSelectVersion', function()
+  local clients = vim.lsp.get_clients({ name = 'vtsls' })
+  if #clients > 0 then
+    local client = clients[1]
+    client.request('workspace/executeCommand', {
+      command = 'typescript.selectTypeScriptVersion',
+      arguments = {}
+    })
+  else
+    vim.notify('vtsls not running', vim.log.levels.WARN)
+  end
+end, { desc = 'Select TypeScript version for vtsls' })
+
+-- Auto-configure vtsls for workspace TypeScript (without picker)
+vim.api.nvim_create_autocmd('LspAttach', {
+  group = vim.api.nvim_create_augroup('vtsls-workspace-config', { clear = true }),
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if client and client.name == 'vtsls' then
+      -- Only send configuration, don't auto-trigger picker
+      vim.defer_fn(function()
+        local tsdk_path = vim.fn.getcwd() .. '/node_modules/typescript/lib'
+        if vim.fn.isdirectory(tsdk_path) == 1 then
+          client.notify('workspace/didChangeConfiguration', {
+            settings = {
+              typescript = {
+                tsdk = tsdk_path
+              },
+              vtsls = {
+                autoUseWorkspaceTsdk = true
+              }
+            }
+          })
+        end
+      end, 1000)
+    end
+  end,
+})
 
 -- -- The line beneath this is called `modeline`. See `:help modeline`
 -- -- vim: ts=2 sts=2 sw=2 et
